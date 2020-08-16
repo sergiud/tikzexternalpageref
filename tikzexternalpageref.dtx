@@ -1,0 +1,343 @@
+% \iffalse meta-comment
+%
+%% tikzexternalpageref.dtx
+%% Copyright (c) 2020 Sergiu Deitsch
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3 or later is part of all distributions of LaTeX
+% version 2005/12/01 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Sergiu Deitsch.
+%
+% \fi
+%
+% \iffalse
+%<*driver>
+\ProvidesFile{tikzexternalpageref.dtx}
+
+\documentclass[american,10pt]{ltxdockit}[2010/09/26]
+\usepackage{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{doc}
+\usepackage{scrbase}
+\usepackage{listings}
+\usepackage[babel]{csquotes}
+\usepackage{graphicx}
+\usepackage[scaled=0.8]{beramono}
+\usepackage{hyperref}
+\usepackage[capitalise]{cleveref}
+
+%\EnableCrossrefs
+%\OnlyDescription
+\CodelineIndex
+\RecordChanges
+
+\hypersetup{%
+  pdfauthor = {Sergiu Deitsch},
+  pdftitle  = {The externalpageref TikZ library},
+}
+
+\lstset{gobble=2}
+
+\begin{document}
+  \DocInput{tikzexternalpageref.dtx}
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v0.1}{2012/01/15}{Initial release}
+%
+% \GetFileInfo{tikzexternalpageref.dtx}
+%
+% \DoNotIndex{\newcommand,\newenvironment,\def,\the,\let,\if,\fi,\else}
+% \DoNotIndex{\newif,\ifx,\ifcase,\or}
+% \DoNotIndex{\begingroup,\endgroup}
+%
+% \titlepage{%
+%   title={The \sty{externalpageref} TikZ Library},
+%   subtitle={Support for \cmd{pageref} in externalized TikZ figures},
+%   url={https://github.com/sergiud/tikzexternalpageref},
+%   author={Sergiu Deitsch},
+%   email={sergiu.deitsch@gmail.com},
+%   revision={0.1},
+%   date={\today}
+% }
+%
+% \printtitlepage
+%
+% \begin{abstract}
+% This library adds support for \cmd{pageref} in externalized TikZ figures.
+% \end{abstract}
+%
+% \tableofcontents
+%
+% \section{Motivation}
+%
+% TikZ is a library for drawing figures directly in \LaTeX\ which also allows to
+% externalize complex figures. Externalization of figures greatly reduces the
+% overall compilation time of the main document. While TikZ allows to refer to
+% labels created in externalized pictures, the support is limited. Specifically,
+% referring to page numbers using the \cmd{pageref} command does not work out of
+% the box. The typeset page number points unconditionally to the first page in
+% the document, because \cmd{thepage} is not (correctly) expanded. \cmd{pageref}
+% support is, however, essential for usage of packages such as \sty{varioref}.
+%
+% \Cref{sec:background} provides background information why the issue arises and
+% how it solved by this package.
+%
+% \section{Requirements}
+%
+% \sty{tikzexternalpageref} requires Perl to be installed on the system. Make
+% also sure you are able to run the \verb|perl| executable from the command
+% line.
+%
+% \section{Usage}
+%
+% Using \sty{tikzexternalpageref} is simple. Just load the \sty{pageref} TikZ
+% library in the preamble of your document:
+% \begin{ltxexample}
+% <<\usetikzlibrary{pageref}>>
+% \end{ltxexample}
+% Finally, make sure your document is compiled with the \verb|-shell-escape|
+% option.
+%
+% \section{Technical Background}
+% \label{sec:background}
+%
+% During externalization, TikZ writes auxiliary information, such as labels, to
+% \texttt{.dpth} files. These files are read in the main document and written to
+% the corresponding \texttt{.aux} file. However, this is done without delaying
+% the write until the page is shipped out, which would allow to infer the
+% correct page number. Normally, this is not an issue because it would only
+% require replacing \verb|\immediate\write| by a \verb|\protected@write| which
+% expands all the commands at page shipout. The problem, however, is that
+% \verb|\protected@write| expands \emph{all} commands and not only
+% \cmd{thepage}---the desired outcome---which can result in compilation errors.
+% To avoid expansion of tokens, they must be protected using the \cmd{protect}
+% command. In particular, every command except for \cmd{thepage} must be
+% protected, because \cmd{thepage} is the only command suitable for token
+% expansion.
+%
+% Protecting tokens in \LaTeX\ directly is not straightforward. For this reason,
+% an external Perl script is used to achieve this goal.
+%
+% \section{Revision History}
+%
+% \begin{changelog}
+%   \begin{release}{0.1}{2020-08-16}
+%     \item Initial release
+%   \end{release}
+% \end{changelog}
+%
+% \StopEventually{}
+%
+% \section{Implementation}
+%
+% \subsection{Package}
+%
+%    \begin{macrocode}
+%<*library>
+%    \end{macrocode}
+% Load required packages.
+%    \begin{macrocode}
+\RequirePackage{etoolbox}
+%    \end{macrocode}
+% Allocate a write register for dumping data.
+%    \begin{macrocode}
+\newwrite\tikzexternalpageref@args
+%    \end{macrocode}
+% The following command executes external programs.
+%    \begin{macrocode}
+\newcommand\tikzexternalpageref@run[1]{%
+  \immediate\write18{#1}}
+%    \end{macrocode}
+% We override TikZ macros at the end of the preamble.
+%    \begin{macrocode}
+\AtEndPreamble{%
+%    \end{macrocode}
+% Check whether Perl is available be printing the exit code of the check script
+% to a \texttt{.prc} file. Also, do not perform the check unnecessarily in
+% externalized figures.
+%    \begin{macrocode}
+  \tikzifexternalizing{}{%
+    \def\tikzexternalpageref@perlcheck{\jobname.prc}%
+%    \end{macrocode}
+% Do not run the check if we already did check.
+%    \begin{macrocode}
+    \IfFileExists{\tikzexternalpageref@perlcheck}{%
+%    \end{macrocode}
+% Perl check file already exists. Nothing to do.
+%    \begin{macrocode}
+    }{%
+%    \end{macrocode}
+%    \begin{macrocode}
+      % Check whether perl is available by printing \def\errc{<code>} to the .prc file
+      \tikzexternalpageref@run{sh -c "test -x \string\"\string$(command -v perl)\string\"; printf '\@percentchar s' \string\"\@backslashchar def\@backslashchar errc{$?}\string\"" > \tikzexternalpageref@perlcheck}%
+    }%
+%    \end{macrocode}
+% The check might not produce any file at all.
+%    \begin{macrocode}
+    \IfFileExists{\tikzexternalpageref@perlcheck}{%
+      \input{\tikzexternalpageref@perlcheck}%
+%    \end{macrocode}
+% Perl check did not produce any usable output (i.e., an empty file).
+%    \begin{macrocode}
+      \ifx\errc\@undefined
+        % TODO
+        \PackageError{fo}{fo}{}%
+      \else
+        \ifdim\errc pt=\z@\else
+          \PackageError{fo}{fo}{}%
+        \fi
+      \fi
+    }{%
+%    \end{macrocode}
+% Warn the use the perl check cannot be run.
+%    \begin{macrocode}
+      % TODO
+    }%
+  }%
+%    \end{macrocode}
+% Override the \texttt{.aux} lines copying.
+%    \begin{macrocode}
+  \ifx\pgfincludeexternalgraphics@read@dpth@line\@undefined
+    \PackageInfo{tikzexternalpageref}{tikz external library not loaded, not patching}%
+  \else
+%    \end{macrocode}
+% What follows is code taken verbatim from TikZ.
+%    \begin{macrocode}
+    \long\def\pgfincludeexternalgraphics@read@dpth@line#1\pgfincludeexternalgraphics@read@dpth@line@EOI{%
+        \pgfincludeexternalgraphics@read@dpth@line@getfirst#1\pgfincludeexternalgraphics@read@dpth@line@EOI
+        \expandafter\ifcat\expandafter\noexpand\pgf@first\relax
+            % Ah -- the first token is a control sequence. It belongs to
+            % the .aux file.
+            %
+            \expandafter\ifx\pgf@first\pgfexternal@restore
+                % if the first line in the .dpth file starts with the
+                % magic string \pgfexternal@restore, the complete line
+                % will be executed as-is. Example:
+                % \pgfexternal@restore{\def\somevalue{1}}
+                #1%
+            \else
+                % do NOT execute #1! many LaTeX commands don't support it (\label for example)
+                \pgfutil@ifundefined{if@filesw}{%
+                    % sorry, .aux file support only for latex
+                }{%
+                    % append to main .aux file (for forward references)
+                    \if@filesw
+                        {%
+%    \end{macrocode}
+% Our modifications start here. Cache results to avoid reading \texttt{.dpth} per line.
+%    \begin{macrocode}
+                        \toks0={#1}%
+                        \immediate\write\tikzexternalpageref@args{\the\toks0}%
+                        }%
+                    \fi
+                }%
+            \fi
+        \else% it is the depth (which is simply a number for backwards compatibility)
+            \def\pgfexternaldepth{#1}%
+        \fi
+    }%
+%    \end{macrocode}
+% Second modification.
+%    \begin{macrocode}
+    \def\pgfexternalreaddpth#1{%
+%    \end{macrocode}
+% Store non-executable .aux lines.
+%    \begin{macrocode}
+        \def\tikzexternalpageref@filenameargs{#1.auxlines}%
+        \immediate\openout\tikzexternalpageref@args=\tikzexternalpageref@filenameargs%
+%    \end{macrocode}
+% The remaining code is taken verbatim from TikZ.
+%    \begin{macrocode}
+        % no \begingroup. Handle that manually:
+        \edef\pgfexternalreaddpth@restore{%
+            \noexpand\endlinechar=\the\endlinechar\space
+            \noexpand\catcode`\noexpand\@=\the\catcode`\@\space
+        }%
+        %
+        \def\pgfexternaldepth{0sp}%
+        \def\pgfexternaltrimleft{0sp}%
+        \def\pgfexternaltrimright{0sp}%
+        \endlinechar=-1 % suppress white space at end
+        \catcode`\@=11
+        \openin\r@pgf@reada=#1.dpth
+        \pgfincludeexternalgraphics@read@dpth
+        %
+%    \end{macrocode}
+% We're done caching the .aux lines.
+%    \begin{macrocode}
+        \immediate\closeout\tikzexternalpageref@args
+        \if@filesw
+%    \end{macrocode}
+% Process the .aux lines.
+%    \begin{macrocode}
+          \def\tikzexternalpageref@filename{#1.pageref}%
+          \tikzexternalpageref@run{perl ./tikzlibrarypageref-protect.pl < \tikzexternalpageref@filenameargs > \tikzexternalpageref@filename}%
+          %\tikzexternalpageref@run{rm \tikzexternalpageref@filenameargs}%
+          \IfFileExists{\tikzexternalpageref@filename}{%
+            \toks0={}%
+            \input\tikzexternalpageref@filename%
+%    \end{macrocode}
+% Expand \verb|\toks0| and check whether the register is empty.
+%    \begin{macrocode}
+            \long\edef\tikzexternalpageref@output{\the\toks0}%
+            \ifx\tikzexternalpageref@output\@empty
+              \PackageError{tikzexternalpageref}{tikzexternalpageref-protect.sh did not produce any usable output}{}%
+            \fi
+          }{%
+            \PackageError{tikzexternalpageref}{Failed to \string\protect\space the .aux content. You may possibly need to compile using the -shell-escape option.}{%
+              The document must be either compiled using the -shell-escape flag or you are missing the perl executable%
+            }%
+          }%
+%    \end{macrocode}
+% This is where the \enquote{magic} happens: \verb|\thepage| is the sole command not
+% protected by the previously executed script on the current .aux line. At
+% shipout, it will be expaned to the correct page number. Not that we avoid
+% defining the tokens in a \verb|\dpthimport| macro followed by call since we
+% output the parameter numbers (hashes followed by a digit) verbatim.
+%    \begin{macrocode}
+          \protected@write\@auxout{}{\the\toks0}%
+        \fi
+%    \end{macrocode}
+% This must be done at the end.
+%    \begin{macrocode}
+        \pgfexternalreaddpth@restore
+    }%
+  \fi
+}
+%    \end{macrocode}
+% Done.
+%    \begin{macrocode}
+%</library>
+%    \end{macrocode}
+% \Finale
+\endinput

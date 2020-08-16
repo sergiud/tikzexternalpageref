@@ -1,0 +1,71 @@
+\documentclass[american]{book}
+\usepackage{tikz}
+\usepackage{babel}
+\usepackage{pgfplots}
+\usepackage{subcaption}
+\usepackage{varioref}
+\usepackage[colorlinks]{hyperref}
+\usepackage[capitalise,english]{cleveref}
+
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+
+%\usepackage{etoolbox}
+
+\tikzexternalize
+[
+  prefix=tikz/,
+  mode=list and make
+]
+
+
+\begin{document}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+\begin{axis}
+[
+  legend entries={foo},
+  legend to name=my legend,
+]
+\addplot+ {x^2};
+\label{pgfplots:foo}
+\end{axis}
+\end{tikzpicture}
+\end{figure}
+
+\pgfplotslegendfromname{my legend}
+
+See \ref{pgfplots:foo}.
+
+\null
+
+\clearpage
+
+\begin{figure}[tb]
+  \centering
+  \begin{tikzpicture}
+    \node[draw,rectangle,text width=.5\linewidth] {%
+      \subcaption{Foo}%
+      \label{fig:foo}%
+    };
+  \end{tikzpicture}
+  \caption{foo}
+\end{figure}
+
+%\null
+%
+%\clearpage
+\null
+
+\clearpage
+
+See \vref{fig:foo}.
+
+%\input{|"echo '\string\\def\string\\foo{\\bar}'"}%
+%%
+%\makeatletter
+%\protected@write\@auxout{}{\foo{\thepage}}
+%\makeatother
+\end{document}

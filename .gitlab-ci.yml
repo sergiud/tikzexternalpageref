@@ -33,6 +33,10 @@ generate:texlive2020:
     image: sergiud/texlive:2020
     <<: *generate_definition
 
+generate:texlive2021:
+    image: sergiud/texlive:2021
+    <<: *generate_definition
+
 compile:texlive2019:
     image: sergiud/texlive:2019
     <<: *compile_definition
@@ -45,6 +49,12 @@ compile:texlive2020:
     dependencies:
         - generate:texlive2020
 
+compile:texlive2021:
+    image: sergiud/texlive:2021
+    <<: *compile_definition
+    dependencies:
+        - generate:texlive2021
+
 verify:texlive2019:
     image: sergiud/texlive:2019
     <<: *verify_definition
@@ -56,3 +66,9 @@ verify:texlive2020:
     <<: *verify_definition
     dependencies:
         - compile:texlive2020
+
+verify:texlive2021:
+    image: sergiud/texlive:2021
+    <<: *verify_definition
+    dependencies:
+        - compile:texlive2021

@@ -20,6 +20,10 @@
     paths:
       - "*.pdf"
 
+default:
+  tags:
+    - docker
+
 stages:
     - config
     - build

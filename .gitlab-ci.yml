@@ -25,22 +25,38 @@ default:
     - docker
 
 stages:
-    - config
-    - build
-    - test
+  - config
+  - build
+  - test
 
 generate:texlive2023:
-    image: sergiud/texlive:2023
-    <<: *generate_definition
+  image: sergiud/texlive:2023
+  <<: *generate_definition
 
 compile:texlive2023:
-    image: sergiud/texlive:2023
-    <<: *compile_definition
-    dependencies:
-        - generate:texlive2023
+  image: sergiud/texlive:2023
+  <<: *compile_definition
+  dependencies:
+    - generate:texlive2023
 
 verify:texlive2023:
-    image: sergiud/texlive:2023
-    <<: *verify_definition
-    dependencies:
-        - compile:texlive2023
+  image: sergiud/texlive:2023
+  <<: *verify_definition
+  dependencies:
+    - compile:texlive2023
+
+generate:texlive2024:
+  image: sergiud/texlive:2024
+  <<: *generate_definition
+
+compile:texlive2024:
+  image: sergiud/texlive:2024
+  <<: *compile_definition
+  dependencies:
+    - generate:texlive2024
+
+verify:texlive2024:
+  image: sergiud/texlive:2024
+  <<: *verify_definition
+  dependencies:
+    - compile:texlive2024

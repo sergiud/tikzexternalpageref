@@ -1,0 +1,57 @@
+% SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+% SPDX-License-Identifier: LPPL-1.3c+
+
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{cleveref}
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+
+% l3build keeps the test source as .lvt, which the subjob that externalizes a
+% picture must input explicitly.
+\tikzset{
+  external/system call={%
+    pdflatex \tikzexternalcheckshellescape -halt-on-error
+    -interaction=batchmode -jobname "\image"
+    "\string\def\string\tikzexternalrealjob{\jobname}%
+    \string\input{\jobname.lvt}"%
+  },
+}
+\tikzexternalize
+
+\newcommand\zlabel[1]{}
+\makeatletter
+\newcommand\typepagefield[2]{%
+  \@ifundefined{r@#2@cref}{\def\pagefield{undefined}}{%
+    \edef\pagefield{%
+      \expandafter\expandafter\expandafter\@secondoftwo
+      \csname r@#2@cref\endcsname}}%
+  \TYPE{#1: \detokenize\expandafter{\pagefield}}}
+\makeatother
+
+\begin{document}
+Text.
+
+% The figure body is read on page 1, but the float lands on page 2.
+\begin{figure}[p]
+  \tikz \node {\refstepcounter{figure}\label{fig:inside}\zlabel{fig:zinside}A};
+  \label{fig:outside}\zlabel{fig:zoutside}
+\end{figure}
+
+\clearpage
+
+\START
+% A failed externalization typesets the picture inline, which yields the
+% correct page without exercising the library.
+\IfFileExists{\jobname-figure0.pdf}{%
+  \TYPE{Picture externalized}%
+}{%
+  \TYPE{Picture not externalized}%
+}
+% The page field of cleveref also carries the page counter, which must match
+% the page the float is shipped out on.
+\typepagefield{Outside}{fig:outside}
+\typepagefield{Inside}{fig:inside}
+\END

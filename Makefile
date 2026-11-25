@@ -1,9 +1,6 @@
-TEX=pdflatex -recorder -shell-escape
+TEX=pdflatex -recorder
 
 all: pagetest.pdf
-
-package:
-	pp tikzlibrarypageref-protect.pl -o tikzlibrarypageref-protect
 
 generate: tikzexternalpageref.ins
 	pdflatex $<

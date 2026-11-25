@@ -1,9 +1,0 @@
-This is a generated file for the l3build validation system.
-Don't change this file in any respect.
-(perl-unavailable.prc)
-! Package tikzexternalpageref Error: Perl is not available.
-See the tikzexternalpageref package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-l. ...\begin{document}
-The library runs perl to keep the page numbers of labels in externalized pictures. Install Perl and make sure that perl is on the PATH. Then delete perl-unavailable.prc to run the check again.

@@ -16,8 +16,11 @@ unconditionally to the first page in the document, because `\thepage` is not
 correctly expanded. `\pageref` support is, however, essential for usage of
 packages such as `varioref`.
 
-This library solves the problem using a Perl script that ensures correct
-expansion.
+This library defers the labels of externalized pictures until the page is
+shipped out and replaces only their page numbers, so that they refer to the
+page the picture lands on. Everything else about the labels stays as TikZ
+writes it. It runs
+entirely in TeX and needs neither external programs nor `-shell-escape`.
 
 ## Getting Started
 
@@ -27,11 +30,9 @@ Usage is straightforward: simply load the library in your preamble:
 \usetikzlibrary{pageref}
 ```
 
-The library works together with the TikZ `external` library and requires Perl
-and a POSIX shell. Compile the document with `-shell-escape`. The library
-locates its Perl script `tikzlibrarypageref-protect.pl` using `kpsewhich`, so
-install the script next to `tikzlibrarypageref.code.tex` or keep it in the
-directory of the document.
+The library works together with the TikZ `external` library. It does not
+require `-shell-escape` itself, but TikZ needs it to externalize pictures in its
+default mode, unlike in the mode `list and make`.
 
 ## Testing
 

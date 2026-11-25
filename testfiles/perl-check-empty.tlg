@@ -1,9 +1,0 @@
-This is a generated file for the l3build validation system.
-Don't change this file in any respect.
-(perl-check-empty.prc)
-! Package tikzexternalpageref Error: Could not determine whether Perl is available.
-See the tikzexternalpageref package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-l. ...\begin{document}
-The check written to perl-check-empty.prc printed nothing. It requires a POSIX shell. Delete perl-check-empty.prc to run the check again.

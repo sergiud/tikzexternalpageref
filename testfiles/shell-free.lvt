@@ -8,11 +8,6 @@
 \usetikzlibrary{external}
 \usetikzlibrary{pageref}
 
-% Simulate a library whose Perl script cannot be found.
-\makeatletter
-\renewcommand\tikzexternalpageref@script{tikzlibrarypageref-missing.pl}
-\makeatother
-
 % l3build keeps the test source as .lvt, which the subjob that externalizes a
 % picture must input explicitly.
 \tikzset{
@@ -27,8 +22,7 @@
 
 \begin{document}
 \START
-% A script that cannot run must not drop the label silently.
+% Only TikZ may run commands. The library processes the labels in TeX, so the
+% log of the last run shows the up-to-date picture and nothing else.
 \tikz \node {\label{inside}A};
-% The dropped labels must leave nothing behind for the .aux file.
-\clearpage
 \END

@@ -1,0 +1,17 @@
+% SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+% SPDX-License-Identifier: LPPL-1.3c+
+
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{etoolbox}
+\usepackage{tikz}
+% The library checks for Perl at the end of the preamble.
+\AtEndPreamble{\START}
+% The check runs and finds Perl.
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+% Stop before the remaining hooks load further files.
+\AtEndPreamble{\END}
+\begin{document}
+\end{document}

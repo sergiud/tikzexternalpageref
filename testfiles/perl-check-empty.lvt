@@ -1,0 +1,22 @@
+% SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+% SPDX-License-Identifier: LPPL-1.3c+
+
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{etoolbox}
+\usepackage{tikz}
+% The library checks for Perl at the end of the preamble.
+\AtEndPreamble{\START}
+% A document macro of the same name as the result of the check must not hide
+% that the check printed nothing.
+\newcommand\errc{0}
+% A cached check whose command printed nothing.
+\begin{filecontents*}[overwrite]{\jobname.prc}
+\end{filecontents*}
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+% Stop before the remaining hooks load further files.
+\AtEndPreamble{\END}
+\begin{document}
+\end{document}

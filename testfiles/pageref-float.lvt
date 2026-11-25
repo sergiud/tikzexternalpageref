@@ -1,0 +1,47 @@
+% SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+% SPDX-License-Identifier: LPPL-1.3c+
+
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{refcount}
+\usepackage{tikz}
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+
+% l3build keeps the test source as .lvt, which the subjob that externalizes a
+% picture must input explicitly.
+\tikzset{
+  external/system call={%
+    pdflatex \tikzexternalcheckshellescape -halt-on-error
+    -interaction=batchmode -jobname "\image"
+    "\string\def\string\tikzexternalrealjob{\jobname}%
+    \string\input{\jobname.lvt}"%
+  },
+}
+\tikzexternalize
+
+\begin{document}
+Text.
+
+% The figure body is read on page 1, but the float lands on page 2. A label
+% inside the externalized picture must refer to the page the float is shipped
+% out on, exactly like a label outside the picture does.
+\begin{figure}[p]
+  \tikz \node {\refstepcounter{figure}\label{fig:inside}A};
+  \label{fig:outside}
+\end{figure}
+
+\clearpage
+
+\START
+% A failed externalization typesets the picture inline, which yields the
+% correct page without exercising the library.
+\IfFileExists{\jobname-figure0.pdf}{%
+  \TYPE{Picture externalized}%
+}{%
+  \TYPE{Picture not externalized}%
+}
+\TYPE{Label outside the picture on page \getpagerefnumber{fig:outside}}
+\TYPE{Label inside the picture on page \getpagerefnumber{fig:inside}}
+\END

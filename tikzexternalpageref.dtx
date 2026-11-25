@@ -71,7 +71,7 @@
 %   Right brace   \}     Tilde         \~}
 %
 %
-% \changes{v0.1}{2012/01/15}{Initial release}
+% \changes{v0.1}{2020/08/16}{Initial release}
 %
 % \GetFileInfo{tikzexternalpageref.dtx}
 %
@@ -109,13 +109,17 @@
 % support is, however, essential for usage of packages such as \sty{varioref}.
 %
 % \Cref{sec:background} provides background information why the issue arises and
-% how it solved by this package.
+% how this package solves it.
 %
 % \section{Requirements}
 %
 % \sty{tikzexternalpageref} requires Perl to be installed on the system. Make
 % also sure you are able to run the \verb|perl| executable from the command
-% line.
+% line. The library runs Perl and its availability check through a POSIX
+% shell, and it locates its Perl script \texttt{tikzlibrarypageref-protect.pl}
+% using \verb|kpsewhich|. The script must therefore be installed next to
+% \texttt{tikzlibrarypageref.code.tex} in the \TeX\ tree or reside in the
+% directory of the document.
 %
 % \section{Usage}
 %
@@ -124,8 +128,9 @@
 % \begin{ltxexample}
 % <<\usetikzlibrary{pageref}>>
 % \end{ltxexample}
-% Finally, make sure your document is compiled with the \verb|-shell-escape|
-% option.
+% The library takes effect only together with the TikZ \sty{external}
+% library. Finally, make sure your document is compiled with the
+% \verb|-shell-escape| option.
 %
 % \section{Technical Background}
 % \label{sec:background}
@@ -177,58 +182,97 @@
 \newcommand\tikzexternalpageref@run[1]{%
   \immediate\write18{#1}}
 %    \end{macrocode}
-% We override TikZ macros at the end of the preamble.
+% The Perl script that protects the \texttt{.aux} lines. \verb|kpsewhich|
+% looks it up in the working directory first and then in the \TeX\ tree, where
+% it is installed next to the library.
 %    \begin{macrocode}
-\AtEndPreamble{%
+\newcommand\tikzexternalpageref@script{tikzlibrarypageref-protect.pl}
 %    \end{macrocode}
-% Check whether Perl is available be printing the exit code of the check script
-% to a \texttt{.prc} file. Also, do not perform the check unnecessarily in
-% externalized figures.
+% The script always assigns \verb|\toks0|, also for pictures without labels.
+% A placeholder left in the register shows that the script did not run.
 %    \begin{macrocode}
-  \tikzifexternalizing{}{%
-    \def\tikzexternalpageref@perlcheck{\jobname.prc}%
+\edef\tikzexternalpageref@nooutput@string{%
+  \detokenize{\tikzexternalpageref@nooutput}}
 %    \end{macrocode}
-% Do not run the check if we already did check.
+% Check whether Perl is available by printing the exit code of the check to
+% a \texttt{.prc} file. The result is cached, so the check runs only once per
+% document.
 %    \begin{macrocode}
-    \IfFileExists{\tikzexternalpageref@perlcheck}{%
-%    \end{macrocode}
-% Perl check file already exists. Nothing to do.
-%    \begin{macrocode}
-    }{%
-%    \end{macrocode}
-%    \begin{macrocode}
-      % Check whether perl is available by printing \def\errc{<code>} to the .prc file
-      \tikzexternalpageref@run{sh -c "test -x \string\"\string$(command -v perl)\string\"; printf '\@percentchar s' \string\"\@backslashchar def\@backslashchar errc{$?}\string\"" > \tikzexternalpageref@perlcheck}%
-    }%
-%    \end{macrocode}
-% The check might not produce any file at all.
-%    \begin{macrocode}
-    \IfFileExists{\tikzexternalpageref@perlcheck}{%
-      \input{\tikzexternalpageref@perlcheck}%
-%    \end{macrocode}
-% Perl check did not produce any usable output (i.e., an empty file).
-%    \begin{macrocode}
-      \ifx\errc\@undefined
-        % TODO
-        \PackageError{fo}{fo}{}%
-      \else
-        \ifdim\errc pt=\z@\else
-          \PackageError{fo}{fo}{}%
-        \fi
-      \fi
-    }{%
-%    \end{macrocode}
-% Warn the use the perl check cannot be run.
-%    \begin{macrocode}
-      % TODO
-    }%
+\newcommand\tikzexternalpageref@checkperl{%
+  \def\tikzexternalpageref@perlcheck{\jobname.prc}%
+  \IfFileExists{\tikzexternalpageref@perlcheck}{}{%
+    % Print \def\errc{<code>} to the .prc file
+    \tikzexternalpageref@run{sh -c "test -x \string\"\string$(command -v perl)\string\"; printf '\@percentchar s' \string\"\@backslashchar def\@backslashchar errc{$?}\string\"" > \tikzexternalpageref@perlcheck}%
   }%
 %    \end{macrocode}
-% Override the \texttt{.aux} lines copying.
+% Without shell escape, the check produces no file at all.
 %    \begin{macrocode}
-  \ifx\pgfincludeexternalgraphics@read@dpth@line\@undefined
+  \IfFileExists{\tikzexternalpageref@perlcheck}{%
+    \begingroup
+    \let\errc\@undefined
+    \input{\tikzexternalpageref@perlcheck}%
+%    \end{macrocode}
+% An empty file means that the shell did not run the check, for instance
+% because it is not a POSIX shell.
+%    \begin{macrocode}
+    \ifx\errc\@undefined
+      \PackageError{tikzexternalpageref}{%
+        Could not determine whether Perl is available%
+      }{%
+        The check written to \tikzexternalpageref@perlcheck\space printed
+        nothing. It requires a POSIX shell. Delete
+        \tikzexternalpageref@perlcheck\space to run the check again.%
+      }%
+    \else
+      \ifnum\errc=\z@\else
+        \PackageError{tikzexternalpageref}{Perl is not available}{%
+          The library runs perl to keep the page numbers of labels in
+          externalized pictures. Install Perl and make sure that perl is
+          on the PATH. Then delete \tikzexternalpageref@perlcheck\space to
+          run the check again.%
+        }%
+      \fi
+    \fi
+    \endgroup
+  }{%
+    \PackageWarning{tikzexternalpageref}{%
+      Could not check whether Perl is available.\MessageBreak
+      Compile with -shell-escape%
+    }%
+  }%
+}
+%    \end{macrocode}
+% We override TikZ macros at the end of the preamble. Without the TikZ
+% \sty{external} library, pictures are not externalized and there is nothing
+% to override.
+%    \begin{macrocode}
+\AtEndPreamble{%
+  \ifx\tikzifexternalizing\@undefined
     \PackageInfo{tikzexternalpageref}{tikz external library not loaded, not patching}%
   \else
+%    \end{macrocode}
+% Externalized pictures do not run Perl, so they skip the check.
+%    \begin{macrocode}
+    \tikzifexternalizing{}{\tikzexternalpageref@checkperl}%
+%    \end{macrocode}
+% While a picture is externalized, PGF redirects the \texttt{.aux} output to
+% the \texttt{.dpth} file and writes it immediately, because the picture is
+% never shipped out as part of a page. Since \LaTeX\ 2025-06-01, the kernel
+% \verb|\protected@write| ends the group that keeps \cmd{thepage} unexpanded
+% before it writes. The immediate write then stores the page number of the
+% externalization run, which is the page the picture is read on rather than
+% the page its float ends up on. Keeping \cmd{thepage} unexpanded around the
+% whole write leaves it in the \texttt{.dpth} file for the main document to
+% expand at shipout. With older kernels, the additional group changes nothing.
+%    \begin{macrocode}
+    \long\def\pgf@external@@protected@write@immediate#1#2#3{%
+      \begingroup
+        \let\pgf@write@=\write
+        \def\write{\noexpand\immediate\pgf@write@}%
+        \let\thepage\relax
+        \pgf@external@@protected@write@orig{#1}{#2}{#3}%
+      \endgroup
+    }%
 %    \end{macrocode}
 % What follows is code taken verbatim from TikZ.
 %    \begin{macrocode}
@@ -300,17 +344,31 @@
 % Process the .aux lines.
 %    \begin{macrocode}
           \def\tikzexternalpageref@filename{#1.pageref}%
-          \tikzexternalpageref@run{perl ./tikzlibrarypageref-protect.pl < \tikzexternalpageref@filenameargs > \tikzexternalpageref@filename}%
+%    \end{macrocode}
+% Without the script, \verb|perl ""| would run the \texttt{.aux} lines from
+% standard input as a Perl program. Hence, Perl runs only if the script is found.
+%    \begin{macrocode}
+          \tikzexternalpageref@run{(script="$(kpsewhich -format=tex \tikzexternalpageref@script)" && exec perl "$script") < \tikzexternalpageref@filenameargs > \tikzexternalpageref@filename}%
           %\tikzexternalpageref@run{rm \tikzexternalpageref@filenameargs}%
           \IfFileExists{\tikzexternalpageref@filename}{%
-            \toks0={}%
+            \toks0={\tikzexternalpageref@nooutput}%
             \input\tikzexternalpageref@filename%
 %    \end{macrocode}
-% Expand \verb|\toks0| and check whether the register is empty.
+% The shell creates the output file even if Perl or the script is missing.
 %    \begin{macrocode}
-            \long\edef\tikzexternalpageref@output{\the\toks0}%
-            \ifx\tikzexternalpageref@output\@empty
-              \PackageError{tikzexternalpageref}{tikzexternalpageref-protect.sh did not produce any usable output}{}%
+            \edef\tikzexternalpageref@output{%
+              \detokenize\expandafter{\the\toks0}}%
+            \ifx\tikzexternalpageref@output\tikzexternalpageref@nooutput@string
+              \PackageError{tikzexternalpageref}{%
+                \tikzexternalpageref@script\space did not protect the labels
+                of #1%
+              }{%
+                Make sure that perl is on the PATH and that
+                \tikzexternalpageref@script\space is installed next to the
+                library or the document. The labels of the picture are
+                dropped.%
+              }%
+              \toks0={}%
             \fi
           }{%
             \PackageError{tikzexternalpageref}{Failed to \string\protect\space the .aux content. You may possibly need to compile using the -shell-escape option.}{%
@@ -320,7 +378,7 @@
 %    \end{macrocode}
 % This is where the \enquote{magic} happens: \verb|\thepage| is the sole command not
 % protected by the previously executed script on the current .aux line. At
-% shipout, it will be expaned to the correct page number. Note that we avoid
+% shipout, it will be expanded to the correct page number. Note that we avoid
 % defining the tokens in a \verb|\dpthimport| macro followed by call since we
 % output the parameter numbers (hashes followed by a digit) verbatim.
 %    \begin{macrocode}
@@ -334,7 +392,7 @@
   \fi
 }
 %    \end{macrocode}
-% Done.
+%
 %    \begin{macrocode}
 %</library>
 %    \end{macrocode}

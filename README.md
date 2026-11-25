@@ -1,6 +1,6 @@
 # TikZ `externalpageref` library
 
-This repository povides a TikZ library that adds support for `\pageref` in
+This repository provides a TikZ library that adds support for `\pageref` in
 externalized TikZ figures.
 
 ## Motivation
@@ -27,7 +27,20 @@ Usage is straightforward: simply load the library in your preamble:
 \usetikzlibrary{pageref}
 ```
 
-No other changes are needed.
+The library works together with the TikZ `external` library and requires Perl
+and a POSIX shell. Compile the document with `-shell-escape`. The library
+locates its Perl script `tikzlibrarypageref-protect.pl` using `kpsewhich`, so
+install the script next to `tikzlibrarypageref.code.tex` or keep it in the
+directory of the document.
+
+## Testing
+
+The regression tests in `testfiles/` run with
+[l3build](https://ctan.org/pkg/l3build):
+
+```sh
+l3build check
+```
 
 
 ## License

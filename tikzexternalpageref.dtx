@@ -20,6 +20,8 @@
 % \iffalse
 %<*driver>
 \ProvidesFile{tikzexternalpageref.dtx}
+% The class loads hyperref, after which doc's hypdoc creates the index links.
+\PassOptionsToPackage{hyperindex=false}{hyperref}
 
 \documentclass{ltxdockit}[2010/09/26]
 \usepackage[american]{babel}
@@ -72,6 +74,7 @@
 %
 %
 % \changes{v0.1}{2020/08/16}{Initial release}
+% \changes{v0.2}{2026/11/26}{Replace the Perl script by deferred page fields}
 %
 % \GetFileInfo{tikzexternalpageref.dtx}
 %
@@ -85,14 +88,17 @@
 %   url={https://github.com/sergiud/tikzexternalpageref},
 %   author={Sergiu Deitsch},
 %   email={sergiu.deitsch@gmail.com},
-%   revision={0.1},
+%   revision={0.2},
 %   date={\today}
 % }
 %
 % \printtitlepage
 %
 % \begin{abstract}
-% This library adds support for \cmd{pageref} in externalized TikZ figures.
+% This library corrects the page numbers of labels in externalized TikZ
+% figures, so that \cmd{pageref} and page references of packages such as
+% \sty{varioref}, \sty{cleveref} and \sty{zref} point to the page the figure
+% lands on.
 % \end{abstract}
 %
 % \tableofcontents
@@ -111,18 +117,29 @@
 % \Cref{sec:background} provides background information why the issue arises and
 % how this package solves it.
 %
+% Only page references are affected. Labels in externalized pictures already
+% refer to the correct figure, section or equation numbers without the
+% library.
+%
+% \section{Requirements}
+%
+% The library requires the TikZ \sty{external} library, a \LaTeX\ kernel of
+% 2020-10-01 or later and the \sty{etoolbox} package. It runs entirely in
+% \TeX\ and needs neither external programs nor the \verb|-shell-escape|
+% option. TikZ itself still needs \verb|-shell-escape| to externalize
+% pictures in its default mode, but not in the mode \texttt{list and make}.
+%
 % \section{Usage}
 %
-% Using \sty{tikzexternalpageref} is simple. Just load the \sty{pageref} TikZ
-% library in the preamble of your document:
+% Load the \sty{pageref} TikZ library after the \sty{external} library in
+% the preamble of your document:
 % \begin{ltxexample}
+% \usetikzlibrary{external}
 % <<\usetikzlibrary{pageref}>>
+% \tikzexternalize
 % \end{ltxexample}
-% The library takes effect only together with the TikZ \sty{external}
-% library. It neither requires external programs nor the
-% \verb|-shell-escape| option. TikZ itself still needs \verb|-shell-escape|
-% to externalize pictures in its default mode, but not in the mode
-% \texttt{list and make}.
+% No other changes are needed. Without the \sty{external} library, the
+% library does nothing.
 %
 % \section{Technical Background}
 % \label{sec:background}
@@ -145,6 +162,14 @@
 % \section{Revision History}
 %
 % \begin{changelog}
+%   \begin{release}{0.2}{2026-11-26}
+%     \item Correct page references with \LaTeX\ 2025-06-01 and later
+%     \item Replace the Perl script by deferred page fields, which removes
+%       the need for Perl and \verb|-shell-escape|
+%     \item Support page references of \sty{cleveref} and \sty{zref}
+%     \item Do nothing without the TikZ \sty{external} library instead of
+%       failing
+%   \end{release}
 %   \begin{release}{0.1}{2020-08-16}
 %     \item Initial release
 %   \end{release}
@@ -164,8 +189,8 @@
 \RequirePackage{etoolbox}
 %    \end{macrocode}
 % \begin{macro}{\tikzexternalpagerefrelabel}
-% The \texttt{.aux} file wraps each label line of an externalized picture in
-% \cmd{tikzexternalpagerefrelabel}. Its arguments are the page, the value of
+% \cmd{tikzexternalpagerefrelabel} wraps each label line of an externalized
+% picture in the \texttt{.aux} file. Its arguments are the page, the value of
 % the page counter and the absolute page at shipout, and the label line. The
 % macro runs the line with \cmd{newlabel} and \cmd{zref@newlabel} redefined to
 % substitute the page.
@@ -301,7 +326,8 @@
 %    \begin{macrocode}
 \AtEndPreamble{%
   \ifx\tikzifexternalizing\@undefined
-    \PackageInfo{tikzexternalpageref}{tikz external library not loaded, not patching}%
+    \PackageInfo{tikzexternalpageref}{%
+      tikz external library not loaded, not patching}%
   \else
     \tikzifexternalizing{}{\tikzexternalpageref@patch}%
   \fi}

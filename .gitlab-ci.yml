@@ -1,62 +1,41 @@
-.generate_template: &generate_definition
-  script:
-    - make generate
-  stage: config
-  artifacts:
-    untracked: true
-
-.compile_template: &compile_definition
-  script:
-    - make doc
-  stage: build
-  artifacts:
-    untracked: true
-
-.verify_template: &verify_definition
-  script:
-    - make test
-  stage: test
-  artifacts:
-    paths:
-      - "*.pdf"
+.texlive_matrix: &texlive_matrix
+  parallel:
+    matrix:
+      - TEXLIVE:
+          - '2023'
+          - '2024'
+          - '2025'
 
 default:
   tags:
     - docker
+  image: sergiud/texlive:$TEXLIVE
 
 stages:
-  - config
   - build
   - test
 
-generate:texlive2023:
-  image: sergiud/texlive:2023
-  <<: *generate_definition
+# Generating the library, building the documentation and the old page test run
+# in one job, so that each TeX Live version uses only its own artifacts.
+build:
+  <<: *texlive_matrix
+  stage: build
+  script:
+    - make generate
+    - make doc
+    - make test
+  artifacts:
+    paths:
+      - "*.pdf"
 
-compile:texlive2023:
-  image: sergiud/texlive:2023
-  <<: *compile_definition
-  dependencies:
-    - generate:texlive2023
-
-verify:texlive2023:
-  image: sergiud/texlive:2023
-  <<: *verify_definition
-  dependencies:
-    - compile:texlive2023
-
-generate:texlive2024:
-  image: sergiud/texlive:2024
-  <<: *generate_definition
-
-compile:texlive2024:
-  image: sergiud/texlive:2024
-  <<: *compile_definition
-  dependencies:
-    - generate:texlive2024
-
-verify:texlive2024:
-  image: sergiud/texlive:2024
-  <<: *verify_definition
-  dependencies:
-    - compile:texlive2024
+check:
+  <<: *texlive_matrix
+  stage: test
+  needs: []
+  script:
+    - l3build check
+  artifacts:
+    when: on_failure
+    paths:
+      - build/test/*.diff
+      - build/test/*.log

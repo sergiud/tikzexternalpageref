@@ -15,15 +15,11 @@ stages:
   - build
   - test
 
-# Generating the library, building the documentation and the old page test run
-# in one job, so that each TeX Live version uses only its own artifacts.
-build:
+doc:
   <<: *texlive_matrix
   stage: build
   script:
-    - make generate
-    - make doc
-    - make test
+    - l3build doc
   artifacts:
     paths:
       - "*.pdf"

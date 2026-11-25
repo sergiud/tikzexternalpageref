@@ -1,4 +1,4 @@
-@default_files = ('pagetest', 'tikzexternalpageref.dtx');
+@default_files = ('tikzexternalpageref.dtx');
 
 $pdflatex = 'pdflatex -recorder -synctex=-1 %O %S';
 $pdf_mode = 1;

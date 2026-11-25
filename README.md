@@ -34,15 +34,16 @@ The library works together with the TikZ `external` library. It does not
 require `-shell-escape` itself, but TikZ needs it to externalize pictures in its
 default mode, unlike in the mode `list and make`.
 
-## Testing
+## Building
 
-The regression tests in `testfiles/` run with
-[l3build](https://ctan.org/pkg/l3build):
+[l3build](https://ctan.org/pkg/l3build) generates the library, builds the
+manual and runs the regression tests in `testfiles/`:
 
 ```sh
+l3build unpack
+l3build doc
 l3build check
 ```
-
 
 ## License
 

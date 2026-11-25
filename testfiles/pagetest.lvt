@@ -1,0 +1,103 @@
+% SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+% SPDX-License-Identifier: LPPL-1.3c+
+
+\input{regression-test}
+
+\documentclass[american]{book}
+\usepackage{babel}
+\usepackage{refcount}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{subcaption}
+\usepackage{varioref}
+\usepackage[colorlinks]{hyperref}
+\usepackage[capitalise,english]{cleveref}
+
+\usetikzlibrary{external}
+\usetikzlibrary{pageref}
+
+% l3build keeps the test source as .lvt, which the subjob that externalizes a
+% picture must input explicitly.
+\tikzset{
+  external/system call={%
+    pdflatex \tikzexternalcheckshellescape -halt-on-error
+    -interaction=batchmode -jobname "\image"
+    "\string\def\string\tikzexternalrealjob{\jobname}%
+    \string\input{\jobname.lvt}"%
+  },
+}
+\tikzexternalize
+
+\makeatletter
+\newcommand\typepagefield[2]{%
+  \@ifundefined{r@#2@cref}{\def\pagefield{undefined}}{%
+    \edef\pagefield{%
+      \expandafter\expandafter\expandafter\@secondoftwo
+      \csname r@#2@cref\endcsname}}%
+  \TYPE{#1: \detokenize\expandafter{\pagefield}}}
+\makeatother
+
+\begin{document}
+Text.
+
+% Both figure bodies are read on page 1, but the floats land on page 2.
+\begin{figure}[p]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[legend entries={foo}, legend to name=my legend]
+      \addplot+ {x^2};
+      \label{pgfplots:foo}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Plot}
+  \label{fig:plot}
+\end{figure}
+
+\begin{figure}[p]
+  \centering
+  \begin{tikzpicture}
+    \node[draw, text width=.5\linewidth] {%
+      \subcaption{Foo}%
+      \label{fig:foo}%
+    };
+  \end{tikzpicture}
+  \caption{Figure}
+  \label{fig:outside}
+\end{figure}
+
+% Externalized by system calls, the pictures pgfplots typesets for references
+% come out empty, since their first run precedes the labels. They hold no
+% labels, so they are typeset inline.
+\tikzexternaldisable
+\pgfplotslegendfromname{my legend}
+
+See \ref{pgfplots:foo} and \vref{fig:foo}.
+\tikzexternalenable
+
+\clearpage
+
+\START
+% A failed externalization typesets the pictures inline, which yields the
+% correct pages without exercising the library.
+\IfFileExists{\jobname-figure0.pdf}{%
+  \TYPE{Plot externalized}%
+}{%
+  \TYPE{Plot not externalized}%
+}
+\IfFileExists{\jobname-figure1.pdf}{%
+  \TYPE{Subfigure externalized}%
+}{%
+  \TYPE{Subfigure not externalized}%
+}
+% Labels inside the pictures must refer to the page of their float, like the
+% labels outside them.
+\TYPE{Plot float on page \getpagerefnumber{fig:plot}}
+\TYPE{Plot label on page \getpagerefnumber{pgfplots:foo}}
+\TYPE{Legend label on page \getpagerefnumber{my legend}}
+\TYPE{Subfigure float on page \getpagerefnumber{fig:outside}}
+\TYPE{Subfigure label on page \getpagerefnumber{fig:foo}}
+\TYPE{Subcaption label on page \getpagerefnumber{sub@fig:foo}}
+\typepagefield{Subfigure float cleveref page}{fig:outside}
+\typepagefield{Subfigure cleveref page}{fig:foo}
+\END

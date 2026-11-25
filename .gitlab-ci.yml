@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020-2022, 2024, 2026 Sergiu Deitsch
+# SPDX-License-Identifier: LPPL-1.3c+
+
 .texlive_matrix: &texlive_matrix
   parallel:
     matrix:
@@ -35,3 +38,13 @@ check:
     paths:
       - build/test/*.diff
       - build/test/*.log
+
+reuse:
+  tags:
+    - docker
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  script:
+    - reuse lint
+  needs: []

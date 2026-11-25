@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2020, 2026 Sergiu Deitsch
+SPDX-License-Identifier: LPPL-1.3c+
+-->
+
 # TikZ `externalpageref` library
 
 This repository provides a TikZ library that adds support for `\pageref` in
@@ -47,4 +52,5 @@ l3build check
 
 ## License
 
-The library is licensed under the [LPPL](https://www.latex-project.org/lppl).
+The library is distributed under the [LaTeX Project Public License
+1.3c](https://ctan.org/license/lppl1.3c) or later.

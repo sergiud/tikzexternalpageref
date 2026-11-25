@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020, 2026 Sergiu Deitsch
+# SPDX-License-Identifier: LPPL-1.3c+
+
 @default_files = ('tikzexternalpageref.dtx');
 
 # The index and the change history of the documentation require the styles of

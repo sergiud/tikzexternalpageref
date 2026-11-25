@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+# SPDX-License-Identifier: LPPL-1.3c+
+
+*.aux
+*.dvi
+*.fdb_latexmk
+*.fls
+*.glg
+*.glo
+*.gls
+*.hd
+*.idx
+*.ilg
+*.ind
+*.log
+*.out
+*.synctex
+*.toc
+*.texloupe.html
+/*.pdf
+/build/
+/pagetest.*
+/tikz/
+/tikzlibrarypageref.code.tex

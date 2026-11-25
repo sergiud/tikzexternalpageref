@@ -20,41 +20,49 @@
 % \iffalse
 %<*driver>
 \ProvidesFile{tikzexternalpageref.dtx}
-% The class loads hyperref, after which doc's hypdoc creates the index links.
-\PassOptionsToPackage{hyperindex=false}{hyperref}
-
-\documentclass{ltxdockit}[2010/09/26]
-\usepackage[american]{babel}
-\usepackage[utf8]{inputenc}
+%</driver>
+%<library>\ProvidesFile{tikzlibrarypageref.code.tex}
+%<*driver|library>
+    [2026-11-26 v0.2 Page references in externalized TikZ pictures]
+%</driver|library>
+%
+%<*driver>
+\documentclass[american,reportchangedates]{ltxdoc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
 \usepackage{microtype}
-\usepackage{doc}
-\usepackage{listings}
-\usepackage[babel]{csquotes}
-\usepackage{graphicx}
-\usepackage[scaled=0.8]{beramono}
-\usepackage{hyperref}
+\usepackage{hypdoc}
 \usepackage[capitalise]{cleveref}
 
-%\EnableCrossrefs
-%\OnlyDescription
+\setcounter{IndexColumns}{2}
+
+\makeatletter
+\newcommand*\FormatISODate[1]{\expandafter\FormatISODate@#1\@nil}
+\def\FormatISODate@#1-#2-#3\@nil{%
+  \ifcase\number#2\relax
+  \or January\or February\or March\or April\or May\or June\or July%
+  \or August\or September\or October\or November\or December%
+  \fi
+  \space\number#3, #1%
+}
+\makeatother
+
+\EnableCrossrefs
 \CodelineIndex
 \RecordChanges
 
 \hypersetup{%
   pdfauthor = {Sergiu Deitsch},
-  pdftitle  = {The externalpageref TikZ library},
+  pdftitle  = {The pageref TikZ library},
 }
-
-\lstset{gobble=2}
 
 \begin{document}
   \DocInput{tikzexternalpageref.dtx}
-  \PrintIndex
 \end{document}
 %</driver>
 % \fi
 %
-% \CheckSum{0}
+% \CheckSum{234}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -73,8 +81,15 @@
 %   Right brace   \}     Tilde         \~}
 %
 %
-% \changes{v0.1}{2020/08/16}{Initial release}
-% \changes{v0.2}{2026/11/26}{Replace the Perl script by deferred page fields}
+% \changes{v0.1}{2020-08-16}{Initial release}
+% \changes{v0.2}{2026-11-26}{Correct page references with \LaTeX\ 2025-06-01
+% and later}
+% \changes{v0.2}{2026-11-26}{Replace the Perl script by deferred page fields,
+% which removes the need for Perl and \texttt{-shell-escape}}
+% \changes{v0.2}{2026-11-26}{Support page references of \textsf{cleveref} and
+% \textsf{zref}}
+% \changes{v0.2}{2026-11-26}{Do nothing without the TikZ \textsf{external}
+% library instead of failing}
 %
 % \GetFileInfo{tikzexternalpageref.dtx}
 %
@@ -82,22 +97,20 @@
 % \DoNotIndex{\newif,\ifx,\ifcase,\or}
 % \DoNotIndex{\begingroup,\endgroup}
 %
-% \titlepage{%
-%   title={The \sty{externalpageref} TikZ Library},
-%   subtitle={Support for \cmd{pageref} in externalized TikZ figures},
-%   url={https://github.com/sergiud/tikzexternalpageref},
-%   author={Sergiu Deitsch},
-%   email={sergiu.deitsch@gmail.com},
-%   revision={0.2},
-%   date={\today}
+% \title{The \href{https://github.com/sergiud/tikzexternalpageref}%
+%   {\textsf{pageref}} TikZ library\thanks{This document corresponds to
+%   \textsf{tikzexternalpageref}~\fileversion, dated \filedate.}}
+% \author{Sergiu Deitsch\\%
+%   \href{mailto:sergiu.deitsch@gmail.com}{\texttt{sergiu.deitsch@gmail.com}}%
 % }
+% \date{\FormatISODate\filedate}
 %
-% \printtitlepage
+% \maketitle
 %
 % \begin{abstract}
 % This library corrects the page numbers of labels in externalized TikZ
-% figures, so that \cmd{pageref} and page references of packages such as
-% \sty{varioref}, \sty{cleveref} and \sty{zref} point to the page the figure
+% figures, so that \cs{pageref} and page references of packages such as
+% \textsf{varioref}, \textsf{cleveref} and \textsf{zref} point to the page the figure
 % lands on.
 % \end{abstract}
 %
@@ -109,10 +122,10 @@
 % externalize complex figures. Externalization of figures greatly reduces the
 % overall compilation time of the main document. While TikZ allows to refer to
 % labels created in externalized pictures, the support is limited. Specifically,
-% referring to page numbers using the \cmd{pageref} command does not work out of
+% referring to page numbers using the \cs{pageref} command does not work out of
 % the box. The typeset page number is the page where the source of the picture
-% stands rather than the page where the picture lands. \cmd{pageref}
-% support is, however, essential for usage of packages such as \sty{varioref}.
+% stands rather than the page where the picture lands. \cs{pageref}
+% support is, however, essential for usage of packages such as \textsf{varioref}.
 %
 % \Cref{sec:background} provides background information why the issue arises and
 % how this package solves it.
@@ -123,22 +136,22 @@
 %
 % \section{Requirements}
 %
-% The library requires the TikZ \sty{external} library, a \LaTeX\ kernel of
-% 2020-10-01 or later and the \sty{etoolbox} package. It runs entirely in
+% The library requires the TikZ \textsf{external} library, a \LaTeX\ kernel of
+% 2020-10-01 or later and the \textsf{etoolbox} package. It runs entirely in
 % \TeX\ and needs neither external programs nor the \verb|-shell-escape|
 % option. TikZ itself still needs \verb|-shell-escape| to externalize
 % pictures in its default mode, but not in the mode \texttt{list and make}.
 %
 % \section{Usage}
 %
-% Load the \sty{pageref} TikZ library after the \sty{external} library in
+% Load the \textsf{pageref} TikZ library after the \textsf{external} library in
 % the preamble of your document:
-% \begin{ltxexample}
-% \usetikzlibrary{external}
-% <<\usetikzlibrary{pageref}>>
-% \tikzexternalize
-% \end{ltxexample}
-% No other changes are needed. Without the \sty{external} library, the
+% \begin{verbatim}
+%   \usetikzlibrary{external}
+%   \usetikzlibrary{pageref}
+%   \tikzexternalize
+% \end{verbatim}
+% No other changes are needed. Without the \textsf{external} library, the
 % library does nothing.
 %
 % \section{Technical Background}
@@ -152,30 +165,14 @@
 % picture to a later page.
 %
 % The library defers each label line until the page is shipped out. It wraps
-% the line in \cmd{tikzexternalpagerefrelabel} together with the page at
+% the line in \cs{tikzexternalpagerefrelabel} together with the page at
 % shipout. When the \texttt{.aux} file is read, the wrapper replaces only the
-% page fields of the label, that is, the page of \LaTeX\ and \sty{cleveref}
-% labels and the page, absolute page and page counter of \sty{zref} labels.
+% page fields of the label, that is, the page of \LaTeX\ and \textsf{cleveref}
+% labels and the page, absolute page and page counter of \textsf{zref} labels.
 % All other fields, as well as all other lines of the \texttt{.dpth} file,
 % stay as TikZ writes them.
 %
-% \section{Revision History}
-%
-% \begin{changelog}
-%   \begin{release}{0.2}{2026-11-26}
-%     \item Correct page references with \LaTeX\ 2025-06-01 and later
-%     \item Replace the Perl script by deferred page fields, which removes
-%       the need for Perl and \verb|-shell-escape|
-%     \item Support page references of \sty{cleveref} and \sty{zref}
-%     \item Do nothing without the TikZ \sty{external} library instead of
-%       failing
-%   \end{release}
-%   \begin{release}{0.1}{2020-08-16}
-%     \item Initial release
-%   \end{release}
-% \end{changelog}
-%
-% \StopEventually{}
+% \MaybeStop{\PrintChanges\PrintIndex}
 %
 % \section{Implementation}
 %
@@ -189,10 +186,10 @@
 \RequirePackage{etoolbox}
 %    \end{macrocode}
 % \begin{macro}{\tikzexternalpagerefrelabel}
-% \cmd{tikzexternalpagerefrelabel} wraps each label line of an externalized
+% \cs{tikzexternalpagerefrelabel} wraps each label line of an externalized
 % picture in the \texttt{.aux} file. Its arguments are the page, the value of
 % the page counter and the absolute page at shipout, and the label line. The
-% macro runs the line with \cmd{newlabel} and \cmd{zref@newlabel} redefined to
+% macro runs the line with \cs{newlabel} and \cs{zref@newlabel} redefined to
 % substitute the page.
 %    \begin{macrocode}
 \long\def\tikzexternalpagerefrelabel#1#2#3#4{%
@@ -208,7 +205,7 @@
 %    \end{macrocode}
 % \end{macro}
 % The arguments are the key, the page, and the fields of the label: its
-% text, its page and the fields \sty{hyperref} adds, if any.
+% text, its page and the fields \textsf{hyperref} adds, if any.
 %    \begin{macrocode}
 \long\def\tikzexternalpageref@relabel#1#2#3#4#5\@nil{%
   \tikzexternalpageref@ifcrefpage{#4}%
@@ -221,7 +218,7 @@
       \unexpanded{#5}}}%
   \tikzexternalpageref@line}
 %    \end{macrocode}
-% \sty{cleveref} writes the page field as
+% \textsf{cleveref} writes the page field as
 % \verb|[|\meta{page}\verb|][|\meta{counter}\verb|][|\meta{prefix}\verb|]|\meta{page}
 % and defers only the trailing page to shipout, which is the part to replace.
 %    \begin{macrocode}
@@ -232,8 +229,8 @@
 \long\def\tikzexternalpageref@crefpage[#1][#2][#3]#4\@nil#5{%
   \def\tikzexternalpageref@page{[#1][#2][#3]#5}}
 %    \end{macrocode}
-% \sty{zref} stores properties as \verb|\name{value}|. Replace the page,
-% the absolute page and the page counter that \sty{zref-clever} keeps. The
+% \textsf{zref} stores properties as \verb|\name{value}|. Replace the page,
+% the absolute page and the page counter that \textsf{zref-clever} keeps. The
 % arguments are the key, the page, the page counter, the absolute page and
 % the properties.
 %    \begin{macrocode}
@@ -247,7 +244,8 @@
   \toks@{}%
   \tikzexternalpageref@zprops#5\tikzexternalpageref@zend{}%
   \edef\tikzexternalpageref@line{%
-    \noexpand\tikzexternalpageref@zrefnewlabel{\unexpanded{#1}}{\the\toks@}}%
+    \noexpand\tikzexternalpageref@zrefnewlabel
+      {\unexpanded{#1}}{\the\toks@}}%
   \tikzexternalpageref@line}
 \def\tikzexternalpageref@zend{\tikzexternalpageref@zend}
 \long\def\tikzexternalpageref@zprops#1#2{%
@@ -276,9 +274,9 @@
   \toks@\expandafter\expandafter\expandafter{%
     \expandafter\the\expandafter\toks@\expandafter#1\expandafter{#2}}}
 %    \end{macrocode}
-% Write a label line at shipout. \verb|\protected@write| keeps \cmd{thepage}
+% Write a label line at shipout. \verb|\protected@write| keeps \cs{thepage}
 % unexpanded until then. The absolute page counter exists only with packages
-% such as \sty{zref-abspage}. The doubled \cmd{unexpanded} survives both the
+% such as \textsf{zref-abspage}. The doubled \cs{unexpanded} survives both the
 % expansion of \verb|\protected@write| and the one at shipout.
 %    \begin{macrocode}
 \newcommand\tikzexternalpageref@deferlabel[1]{%
@@ -306,7 +304,8 @@
 % stays readable without the library.
 %    \begin{macrocode}
 \newcommand\tikzexternalpageref@patch{%
-  \let\tikzexternalpageref@dpthline\pgfincludeexternalgraphics@read@dpth@line
+  \let\tikzexternalpageref@dpthline
+    \pgfincludeexternalgraphics@read@dpth@line
   \long\def\pgfincludeexternalgraphics@read@dpth@line##1%
       \pgfincludeexternalgraphics@read@dpth@line@EOI{%
     \pgfincludeexternalgraphics@read@dpth@line@getfirst##1%
@@ -318,10 +317,11 @@
   \AtBeginDocument{%
     \if@filesw
       \immediate\write\@auxout{%
-        \string\providecommand\string\tikzexternalpagerefrelabel[4]{\string##4}}%
+        \string\providecommand
+        \string\tikzexternalpagerefrelabel[4]{\string##4}}%
     \fi}}
 %    \end{macrocode}
-% Without the TikZ \sty{external} library, pictures are not externalized and
+% Without the TikZ \textsf{external} library, pictures are not externalized and
 % there is nothing to patch. Externalized pictures need no patch either.
 %    \begin{macrocode}
 \AtEndPreamble{%

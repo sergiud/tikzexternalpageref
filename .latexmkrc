@@ -1,8 +1,16 @@
 @default_files = ('tikzexternalpageref.dtx');
 
-$pdflatex = 'pdflatex -recorder -synctex=-1 %O %S';
-$pdf_mode = 1;
+# The index and the change history of the documentation require the styles of
+# the doc package.
+$makeindex = 'makeindex -s gind.ist %O -o %D %S';
 
-$makeindex = 'makeindex -s gind.ist %S'
+add_cus_dep('glo', 'gls', 0, 'makeglossary');
 
-# set vim: ft=perl tw=0
+sub makeglossary {
+    return system("makeindex -s gglo.ist -t \"$_[0].glg\" -o \"$_[0].gls\" "
+        . "\"$_[0].glo\"");
+}
+
+$clean_ext .= ' glg glo gls hd';
+
+# vim: set ft=perl

@@ -22,3 +22,5 @@
 /pagetest.*
 /tikz/
 /tikzlibrarypageref.code.tex
+/tikzexternalpageref-ctan.zip
+/tikzexternalpageref-ctan.curlopt

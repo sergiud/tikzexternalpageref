@@ -1,0 +1,3 @@
+The pageref TikZ library makes \pageref and the page references of
+varioref, cleveref and zref in externalized TikZ pictures point to the page
+the picture lands on, instead of the page where its source stands.

@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2026 Sergiu Deitsch
+# SPDX-License-Identifier: LPPL-1.3c+
+
+name: TeXLive
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: TeXLive ${{matrix.texlive}}
+    runs-on: ubuntu-latest
+    container: texlive/texlive:${{matrix.texlive}}
+    strategy:
+      fail-fast: true
+      matrix:
+        texlive:
+          - TL2022-historic
+          - TL2023-historic
+          - TL2024-historic
+          - latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build CTAN package
+        run: |
+          l3build ctan
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
+        with:
+          name: tikzexternalpageref-texlive-${{matrix.texlive}}
+          path: |
+            build/distrib/ctan/tikzexternalpageref/

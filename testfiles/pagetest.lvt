@@ -30,11 +30,14 @@
 \tikzexternalize
 
 \makeatletter
+% Newer kernels add further fields to labels, so select the page field
+% alone.
+\def\pagefield@second#1#2#3\@nil{#2}
 \newcommand\typepagefield[2]{%
   \@ifundefined{r@#2@cref}{\def\pagefield{undefined}}{%
     \edef\pagefield{%
-      \expandafter\expandafter\expandafter\@secondoftwo
-      \csname r@#2@cref\endcsname}}%
+      \expandafter\expandafter\expandafter\pagefield@second
+      \csname r@#2@cref\endcsname\@nil}}%
   \TYPE{#1: \detokenize\expandafter{\pagefield}}}
 \makeatother
 
